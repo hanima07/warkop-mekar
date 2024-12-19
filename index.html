@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warkop Mekar</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: flex-end;
+            padding: 10px;
+            background-color: #6a6666;
+        }
+
+        .nav-btn {
+            color: white;
+            background-color: #535252;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .nav-btn:hover {
+            background-color: #070707;
+        }
+
+        .container {
+            text-align: center;
+            padding: 50px;
+            background-color: #6e6c6c;
+        }
+
+        .container h1 {
+            color: white;
+            font-size: 36px;
+        }
+
+        .description {
+            color: black;
+            font-size: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin-top: 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #928c8c;
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(6, 6, 6, 0.5);
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+            text-align: center; /* Rata tengah teks */
+        }
+
+        #map {
+            width: 60%;
+            height: 600px;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        .info img {
+            width: 50%;
+            height: auto;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <button class="nav-btn" id="homeBtn">Home</button>
+        <button class="nav-btn" id="aboutBtn">Tentang</button>
+    </div>
+
+    <div class="container">
+        <h1>Selamat Datang di Warkop Mekar</h1>
+        <p class="description">Tempat terbaik untuk menikmati kopi dan bersantai di Selayar</p>
+        <button id="learnMoreBtn">Pelajari Lebih Lanjut</button>
+    </div>
+
+    <!-- Popup Tentang Warkop Mekar -->
+    <div id="aboutPopup" class="popup">
+        <h2>Tentang Warkop Mekar</h2>
+        <p>Warkop Mekar adalah tempat yang nyaman untuk menikmati kopi sambil bersantai di tengah kota Benteng, Selayar.</p>
+         Kami menyajikan berbagai jenis kopi dan minuman lainnya dengan harga yang terjangkau.</p>
+        <button id="closeAboutBtn">Tutup</button>
+    </div>
+
+    <!-- Maps dan Detail Warkop -->
+    <div id="mapsPopup" class="popup">
+        <div id="map"></div>
+        <button id="closeMapsBtn">Tutup</button>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    // Fungsi untuk membuka popup Tentang
+    document.getElementById('aboutBtn').addEventListener('click', function() {
+        document.getElementById('aboutPopup').style.display = 'flex';
+    });
+
+    // Fungsi untuk menutup popup Tentang
+    document.getElementById('closeAboutBtn').addEventListener('click', function() {
+        document.getElementById('aboutPopup').style.display = 'none';
+    });
+
+    // Fungsi untuk membuka maps
+    document.getElementById('learnMoreBtn').addEventListener('click', function() {
+        document.getElementById('mapsPopup').style.display = 'flex';
+        initMap(); // Menampilkan peta saat tombol diklik
+    });
+
+    // Fungsi untuk menutup maps
+    document.getElementById('closeMapsBtn').addEventListener('click', function() {
+        document.getElementById('mapsPopup').style.display = 'none';
+    });
+
+    // Fungsi untuk memuat dan menambahkan GeoJSON ke peta
+    function loadGeoJson(map, geoJsonPath) {
+        fetch(geoJsonPath)
+            .then(response => response.json())
+            .then(data => {
+                L.geoJSON(data).addTo(map);
+            })
+            .catch(error => console.log('Error loading GeoJSON:', error));
+    }
+
+    // Fungsi untuk menampilkan OpenStreetMap
+    function initMap() {
+        // Buat peta
+        const map = L.map('map').setView([-6.1166485, 120.4675009], 15);
+
+        // Tambahkan tile layer dari OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+        }).addTo(map);
+
+
+        // Tambahkan GeoJSON untuk kota Benteng dan jalan
+        loadGeoJson(map, 'kota_benteng_selayar.geojson');
+        loadGeoJson(map, 'Jalan.geojson'); // Tambahkan file GeoJSON Jalan
+
+        // Tambahkan marker untuk Warkop Mekar
+        const marker = L.marker([-6.1166485, 120.4675009]).addTo(map);
+
+        // Tambahkan popup ke marker
+        marker.bindPopup(`
+            <div>
+                <h3>Warkop Mekar</h3>
+                <img src="warkop_mekar.png" alt="Warkop Mekar" width="300" height="200">
+                <p>Alamat: Jl. Jenderal Ahmad Yani</p>
+                <p>Jam Buka: 10:00 - 02:00</p>
+                <h4>Menu & Harga:</h4>
+                <ul>
+                    <li>Kopi Pahit: Rp.5000</li>
+                    <li>Kopi Susu: Rp.7000</li>
+                    <li>Es Teh: Rp.4000</li>
+                    <li>Extra Joss Susu: Rp.8000</li>
+                </ul>
+            </div>
+        `);
+    }
+</script>
+</body>
+</html>
